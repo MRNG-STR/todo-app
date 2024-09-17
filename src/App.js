@@ -1,22 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import AddTodo from './components/AddTodo';  // Importing AddTodo component
-import TodoList from './components/TodoList';  // Importing TodoList component
-import Filter from './components/Filter';  // Importing Filter component
+import React, { useState, useEffect } from 'react'; 
+// Importing component
+import AddTodo from './components/AddTodo';  
+import TodoList from './components/TodoList';  
+import Filter from './components/Filter';  
 
 function App() {
-  const [todos, setTodos] = useState([]);  // State for all todos
-  const [filter, setFilter] = useState('all');  // State to handle the current filter selection
-
-  // Fetch all todos from the DummyJSON API when the component mounts
+  const [todos, setTodos] = useState(() => {
+    // Retrieve todos from local storage 
+    const savedTodos = localStorage.getItem('todos');
+    return savedTodos ? JSON.parse(savedTodos) : [];  
+  });  
+  const [filter, setFilter] = useState('all');  
+  // Fetch all todos from the DummyJSON API 
   useEffect(() => {
-    fetch('https://dummyjson.com/todos')
-      .then((res) => res.json())
-      .then((data) => setTodos(data.todos))  // Set the todos from the response
-      .catch((error) => console.error('Error fetching todos:', error));
-  }, []);
+    // Only fetch from API if there are no todos in local storage
+    if (todos.length === 0) {
+      fetch('https://dummyjson.com/todos')
+        .then((res) => res.json())
+        .then((data) => {
+          setTodos(data.todos);  
+          localStorage.setItem('todos', JSON.stringify(data.todos));  // Save todos to local storage
+        })  
+        .catch((error) => console.error('Error fetching todos:', error));
+    }
+  }, [todos.length]);  
+
+
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos));  // Store todos as a string in local storage
+  }, [todos]);  
 
   const addTodo = (task) => {
-    // Simulating adding a new todo via API
+    // Adding a new todo via API
     fetch('https://dummyjson.com/todos/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -28,14 +43,15 @@ function App() {
     })
       .then((res) => res.json())
       .then((newTodo) => {
-        setTodos([...todos, newTodo]);  // Add the new todo to the state
+        setTodos([...todos, newTodo]);  
+        // Add the new todo to the state
       });
   };
 
   const toggleCompletion = (id) => {
     const todoToUpdate = todos.find(todo => todo.id === id);
     
-    // Simulating updating a todo via API
+    // updating a todo via API
     fetch(`https://dummyjson.com/todos/${id}`, {
       method: 'PUT',  // Use PUT to update
       headers: { 'Content-Type': 'application/json' },
@@ -54,13 +70,13 @@ function App() {
   };
 
   const deleteTodo = (id) => {
-    // Simulating deleting a todo via API
+    // deleting a todo via API
     fetch(`https://dummyjson.com/todos/${id}`, {
       method: 'DELETE',
     })
       .then((res) => res.json())
       .then(() => {
-        setTodos(todos.filter(todo => todo.id !== id));  // Remove the todo from the state
+        setTodos(todos.filter(todo => todo.id !== id));  
       });
   };
 
@@ -74,7 +90,8 @@ function App() {
     return todos;
   };
 
-  const filteredTodos = getFilteredTodos();  // Get the filtered list of todos
+  const filteredTodos = getFilteredTodos();  
+  // Get the filtered list 
 
   return (
     <div>
@@ -83,9 +100,9 @@ function App() {
       <Filter filter={filter} setFilter={setFilter} />  {/* Filter tasks */}
       
       <TodoList 
-        todos={filteredTodos}  // Pass the filtered todos to the TodoList
-        toggleCompletion={toggleCompletion}  // Pass toggle function
-        deleteTodo={deleteTodo}  // Pass delete function
+        todos={filteredTodos}  
+        toggleCompletion={toggleCompletion}  
+        deleteTodo={deleteTodo} 
       />
     </div>
   );

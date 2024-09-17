@@ -6,7 +6,7 @@ const TodoList = ({ todos, toggleCompletion, deleteTodo }) => {
       {todos.map((todo) => (
         <li
           key={todo.id}
-          onClick={() => toggleCompletion(todo.id)}  // Toggle task completion
+          onClick={() => toggleCompletion(todo.id)}  
           style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}
         >
           {todo.todo}  {/* Displaying the task */}
